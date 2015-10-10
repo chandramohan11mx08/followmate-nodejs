@@ -1,7 +1,5 @@
 var MongoClient = require('mongodb').MongoClient;
 var url = 'mongodb://localhost:27017/followmate';
-var shortId = require('shortid');
-shortId.characters('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ$@');
 
 var connectToMongoDb = function(callBack){
     MongoClient.connect(url, function (err, db) {
