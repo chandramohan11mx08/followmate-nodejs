@@ -68,11 +68,12 @@ var io = require('socket.io').listen(http);
 
 io.sockets.on('connection', function (socket) {
     console.log('A new user connected!');
+    console.dir(socket.id);
 
     socket.emit('info', { msg: 'The world is round, there is no up or down.' });
 
     socket.on('chat_message', function (msg) {
-        console.dir(msg);
+        console.dir(msg+" from "+socket.id);
         socket.broadcast.emit('chat_received', { msg: msg});
     });
 
