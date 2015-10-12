@@ -1,50 +1,30 @@
-var MongoClient = require('mongodb').MongoClient;
+var Promise = require('bluebird');
+var Mongo = Promise.promisify(require('mongodb'));
+var MongoClient = Promise.promisify(Mongo.MongoClient);
+
 var url = 'mongodb://localhost:27017/followmate';
 
-var connectToMongoDb = function (callBack) {
-    MongoClient.connect(url, function (err, db) {
-        if (err) {
-            console.log("Failed to connect to db");
-            return;
-        }
-        else {
-            callBack(null, db);
-        }
-    });
-}
-
-var insertDocument = function (collection, document, callBack) {
-    connectToMongoDb(function (err, db) {
-        if (err) {
-            return;
-        }
-        else {
-            db.collection(collection).insertOne(document, function (err, result) {
-                if (err) {
-                    console.log("Failed to insert document");
-                }
-                db.close();
-                callBack(err, result);
-            });
-        }
+var connectToMongoDb = function () {
+    return MongoClient.connect(url).then(function (db) {
+        return (db);
     });
 };
 
-var isDocumentExists = function (collection, conditionAsJson, callBack) {
-    connectToMongoDb(function (err, db) {
-        if (err) {
-            return;
-        } else {
-            db.collection(collection).find(conditionAsJson).toArray(function (err, docs) {
-                if (err) {
-                    callBack(err, true);
-                    return;
-                } else {
-                    callBack(null, docs.length > 0);
-                }
-                db.close();
-            });
-        }
+var insertDocument = function (collection, document) {
+    return connectToMongoDb().then(function (db) {
+        return db.collection(collection).insertOne(document).then(function (result) {
+            db.close();
+            return result;
+        });
+    });
+};
+
+var isDocumentExists = function (collection, conditionAsJson) {
+    return connectToMongoDb().then(function (db) {
+        return db.collection(collection).find(conditionAsJson).toArray().then(function (docs) {
+            db.close();
+            return docs.length > 0;
+        });
     });
 };
 
