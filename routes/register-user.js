@@ -1,6 +1,10 @@
 var shortIdHelper = require('./helpers/shortid-helper');
 var mongoDbHelper = require('./helpers/mongo-helper');
 
+var MOBILE_NUMBER_EXISTS = 'Mobile number already exists';
+var INVALID_MOBILE_NUMBER = 'Invalid mobile number';
+var ERROR_UNKNOWN = 'Something went wrong';
+
 var sendResponse = function (res, isUserCreated, message) {
     res.send({'is_user_created': isUserCreated, 'msg': message});
 };
@@ -17,23 +21,23 @@ var registerUser = function (req, res) {
     console.dir(data);
     var mobileNumber = data.mobile_number;
     if (mobileNumber.length < 10) {
-        sendResponse(res, false, 'Invalid mobile number');
+        sendResponse(res, false, INVALID_MOBILE_NUMBER);
     } else {
         mongoDbHelper.isDocumentExists('user', {'mobile_number': mobileNumber}).then(function (isExists) {
             if (isExists) {
-                sendResponse(res, false, 'Mobile number already exists');
+                sendResponse(res, false, MOBILE_NUMBER_EXISTS);
             } else {
                 getNewUserId().then(function (response) {
                     if (response.status) {
                         var document = getUserObject(response.user_id, mobileNumber);
                         mongoDbHelper.insertDocument('user', document).then(function (result) {
-                            sendResponse(res, true, 'User created with id ' + response.user_id);
+                            sendResponse(res, true, response.user_id);
                         });
                     }
                 });
             }
         }).catch(function (e) {
-                sendResponse(res, false, 'Something went wrong');
+                sendResponse(res, false, ERROR_UNKNOWN);
             });
     }
 };
