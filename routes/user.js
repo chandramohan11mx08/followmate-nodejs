@@ -7,8 +7,8 @@ var ERROR_UNKNOWN = 'Something went wrong';
 
 var USER_COLLECTION = "user";
 
-var sendResponse = function (res, isUserCreated, message) {
-    res.send({'is_user_created': isUserCreated, 'msg': message});
+var sendResponse = function (res, isUserCreated, message, userId) {
+    res.send({'is_user_created': isUserCreated, 'msg': message, 'user_id':userId});
 };
 
 function getUserObject(userId, mobileNumber) {
@@ -21,26 +21,25 @@ function getUserObject(userId, mobileNumber) {
 }
 var registerUser = function (req, res) {
     var data = req.body;
-    console.dir(data);
     var mobileNumber = data.mobile_number;
     if (mobileNumber.length < 10) {
-        sendResponse(res, false, INVALID_MOBILE_NUMBER);
+        sendResponse(res, false, INVALID_MOBILE_NUMBER, null);
     } else {
         mongoDbHelper.isDocumentExists(USER_COLLECTION, {'mobile_number': mobileNumber}).then(function (isExists) {
             if (isExists) {
-                sendResponse(res, false, MOBILE_NUMBER_EXISTS);
+                sendResponse(res, false, MOBILE_NUMBER_EXISTS, null);
             } else {
                 getNewUserId().then(function (response) {
                     if (response.status) {
                         var document = getUserObject(response.user_id, mobileNumber);
                         mongoDbHelper.insertDocument(USER_COLLECTION, document).then(function (result) {
-                            sendResponse(res, true, response.user_id);
+                            sendResponse(res, true,"", response.user_id);
                         });
                     }
                 });
             }
         }).catch(function (e) {
-                sendResponse(res, false, ERROR_UNKNOWN);
+                sendResponse(res, false, ERROR_UNKNOWN,null);
             });
     }
 };
