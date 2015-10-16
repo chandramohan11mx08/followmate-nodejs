@@ -7,7 +7,7 @@ router.get('/', function(req, res, next) {
   res.render('index');
 });
 
-router.post('/register-user',function(req,res,next){
+router.post('/user/register',function(req,res,next){
     registerUser.registerUser(req,res);
 });
 
