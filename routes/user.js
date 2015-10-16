@@ -11,10 +11,11 @@ var sendResponse = function (res, isUserCreated, message, userId) {
     res.send({'is_user_created': isUserCreated, 'msg': message, 'user_id':userId});
 };
 
-function getUserObject(userId, mobileNumber) {
+function getUserObject(userId, mobileNumber, deviceId) {
     var document = {'user_id': userId,
         'is_active': true,
         'mobile_number': mobileNumber,
+        'device_id':deviceId,
         'is_verified': false,
         'timestamp': Date.now()};
     return document;
@@ -22,6 +23,7 @@ function getUserObject(userId, mobileNumber) {
 var registerUser = function (req, res) {
     var data = req.body;
     var mobileNumber = data.mobile_number;
+    var deviceId = data.device_id;
     if (mobileNumber.length < 10) {
         sendResponse(res, false, INVALID_MOBILE_NUMBER, null);
     } else {
@@ -31,7 +33,7 @@ var registerUser = function (req, res) {
             } else {
                 getNewUserId().then(function (response) {
                     if (response.status) {
-                        var document = getUserObject(response.user_id, mobileNumber);
+                        var document = getUserObject(response.user_id, mobileNumber, deviceId);
                         mongoDbHelper.insertDocument(USER_COLLECTION, document).then(function (result) {
                             sendResponse(res, true,"", response.user_id);
                         });
@@ -50,7 +52,6 @@ var getNewUserId = function () {
         if (isExists) {
             getNewUserId();
         } else {
-            console.log("user id created " + shortId);
             return {"status": true, "user_id": shortId};
         }
     });
