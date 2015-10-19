@@ -68,14 +68,23 @@ var io = require('socket.io').listen(http);
 io.sockets.on('connection', function (socket) {
     console.log('A new user connected!');
 
-    socket.emit('info', { msg: 'The world is round, there is no up or down.' });
-
     socket.on('start_session', function (data) {
         session.createNewSession(data).then(function(sessionData){
             console.log("session id "+sessionData.session_id);
             socket.join(sessionData.session_id);
             socket.emit('session_started', { msg: sessionData.session_id});
         });
+    });
+
+    socket.on('join_session', function (data) {
+        console.log('User '+data.user_id+" has joined");
+        socket.join(data.session_id);
+        socket.emit('joined_session', { msg: data.session_id});
+        socket.broadcast.to(data.session_id).emit('new_user_joined','User '+data.user_id+" has joined");
+    });
+
+    socket.on('update_location', function (data) {
+        socket.broadcast.to(data.session_id).emit('get_location','User '+data.user_id+" has updated location "+data.location);
     });
 
     socket.on('chat_message', function (msg) {
