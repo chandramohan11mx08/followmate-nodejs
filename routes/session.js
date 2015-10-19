@@ -1,39 +1,31 @@
 var shortIdHelper = require('./helpers/shortid-helper');
 var mongoDbHelper = require('./helpers/mongo-helper');
+var Promise = require('bluebird');
 
 var UNKNOWN_USER = "Unknown user";
 var ERROR_UNKNOWN = 'Something went wrong';
 
 var SESSION_COLLECTION="session";
 
-var sendResponse = function (res, isSessionCreated,sessionId, message) {
-    res.send({'is_session_created': isSessionCreated,'session_id':sessionId ,'msg': message});
+var sendResponse = function (isSessionCreated, sessionId, message) {
+    console.log("response "+isSessionCreated);
+    return ({'is_session_created': isSessionCreated, 'session_id': sessionId, 'msg': message});
 };
 
-function getNewSessionObject(userId, mobileNumber) {
-    var document = {'user_id': userId,
-        'mobile_number': mobileNumber,
-        'is_verified': false,
-        'timestamp': Date.now()};
-    return document;
-}
-
-var createNewSession = function (req, res) {
-    var data = req.body;
-    console.dir(data);
+var createNewSession = function (data) {
     var userId = data.user_id;
-    if (userId == null) {
-        sendResponse(res, false, null, UNKNOWN_USER);
-    } else {
-        getNewSessionId().then(function (response) {
-            if (response.status) {
-                var document = getNewSessionObject(response.session_id, userId);
-                mongoDbHelper.insertDocument(SESSION_COLLECTION, document).then(function (result) {
-//                            sendResponse(res, true, response.user_id);
-                });
-            }
-        });
-    }
+    return getNewSessionId().then(function (response) {
+        if (response.status) {
+            var data = {
+                "session_id": response.session_id,
+                "user_id": userId,
+                "start_time": Date.now()
+            };
+            return mongoDbHelper.insertDocument(SESSION_COLLECTION, data).then(function (result) {
+                return sendResponse(true, response.session_id);
+            });
+        }
+    });
 };
 
 var getNewSessionId = function () {
@@ -42,10 +34,16 @@ var getNewSessionId = function () {
         if (isExists) {
             getNewSessionId();
         } else {
-            console.log("session id created " + shortId);
             return {"status": true, "session_id": shortId};
         }
     });
 };
 
+//var data2 = {"user_id": 1234};
+//var response = createNewSession(data2).then(function(response){
+//    console.log("response");
+//    console.dir(response);
+//});
+
 exports.createNewSession = createNewSession;
+//exports.getNewSessionId = getNewSessionId;

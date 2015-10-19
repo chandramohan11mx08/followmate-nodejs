@@ -10,10 +10,10 @@ socket.on('info', function (data) {
     console.log(data);
 });
 
-socket.on('chat_received', function (data) {
-    console.log(data.msg);
+socket.on('session_started', function (data) {
+    console.log(data);
 });
 
-function sendMessage(text){
-    socket.emit('chat_message',{msg:text});
+function sendMessage(data){
+    socket.emit('start_session',data);
 }

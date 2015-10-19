@@ -5,6 +5,7 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var expressHandlebars = require('express-handlebars');
+var session = require('./routes/session');
 
 var routes = require('./routes/index');
 
@@ -66,9 +67,16 @@ var io = require('socket.io').listen(http);
 
 io.sockets.on('connection', function (socket) {
     console.log('A new user connected!');
-    console.dir(socket.id);
 
     socket.emit('info', { msg: 'The world is round, there is no up or down.' });
+
+    socket.on('start_session', function (data) {
+        session.createNewSession(data).then(function(sessionData){
+            console.log("session id "+sessionData.session_id);
+            socket.join(sessionData.session_id);
+            socket.emit('session_started', { msg: sessionData.session_id});
+        });
+    });
 
     socket.on('chat_message', function (msg) {
         console.dir(msg+" from "+socket.id);
