@@ -69,10 +69,11 @@ io.sockets.on('connection', function (socket) {
     console.log('A new user connected!');
 
     socket.on('start_session', function (data) {
-        session.createNewSession(data).then(function(sessionData){
-            console.log("session id "+sessionData.session_id);
-            socket.join(sessionData.session_id);
-            socket.emit('session_started', { msg: sessionData.session_id});
+        session.createNewSession(data).then(function (sessionData) {
+            if (sessionData.is_session_created) {
+                socket.join(sessionData.session_id);
+            }
+            socket.emit('session_started', sessionData);
         });
     });
 

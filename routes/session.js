@@ -26,7 +26,8 @@ var createNewSession = function (data) {
                 ]
             };
             return mongoDbHelper.insertDocument(SESSION_COLLECTION, data).then(function (result) {
-                return sendResponse(true, response.session_id);
+                var sessionCreated = result.result.n > 0;
+                return sendResponse(sessionCreated , response.session_id);
             });
         }
     });
