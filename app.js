@@ -81,10 +81,10 @@ io.sockets.on('connection', function (socket) {
         session.addNewParticipant(data.session_id, data.user_id).then(function (isAdded) {
             if (isAdded) {
                 socket.join(data.session_id);
-                socket.emit('joined_session', { msg: true});
+                socket.emit('joined_session', { joined: true});
                 socket.broadcast.to(data.session_id).emit('new_user_joined', 'User ' + data.user_id + " has joined");
             }else{
-                socket.emit('joined_session', { msg: false});
+                socket.emit('joined_session', { joined: false});
             }
         });
     });
