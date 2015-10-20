@@ -16,10 +16,14 @@ var createNewSession = function (data) {
     var userId = data.user_id;
     return getNewSessionId().then(function (response) {
         if (response.status) {
+            var currentTimestamp = Date.now();
             var data = {
                 "session_id": response.session_id,
                 "user_id": userId,
-                "start_time": Date.now()
+                "start_time": currentTimestamp,
+                "participants": [
+                    {"user_id": userId, "joined_at": currentTimestamp}
+                ]
             };
             return mongoDbHelper.insertDocument(SESSION_COLLECTION, data).then(function (result) {
                 return sendResponse(true, response.session_id);
@@ -39,6 +43,24 @@ var getNewSessionId = function () {
     });
 };
 
+var addNewParticipant = function (session_id, userId) {
+    return getSession(session_id).then(function (sessionData) {
+        if (sessionData != null) {
+            sessionData.participants.push({"user_id": userId, "joined_at": Date.now()});
+            return mongoDbHelper.updateDocument(SESSION_COLLECTION, {"session_id": session_id}, {$set: {"participants": sessionData.participants}}).then(function (isUpdated) {
+                return isUpdated;
+            });
+        }else{
+            return false;
+        }
+    });
+};
+
+var getSession = function (session_id) {
+    return mongoDbHelper.findOneDocument(SESSION_COLLECTION, {"session_id": session_id}).then(function (sessionData) {
+        return sessionData;
+    });
+};
 //var data2 = {"user_id": 1234};
 //var response = createNewSession(data2).then(function(response){
 //    console.log("response");
@@ -46,4 +68,5 @@ var getNewSessionId = function () {
 //});
 
 exports.createNewSession = createNewSession;
-//exports.getNewSessionId = getNewSessionId;
+exports.getSession = getSession;
+exports.addNewParticipant = addNewParticipant;

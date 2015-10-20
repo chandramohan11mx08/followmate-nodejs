@@ -77,10 +77,15 @@ io.sockets.on('connection', function (socket) {
     });
 
     socket.on('join_session', function (data) {
-        console.log('User '+data.user_id+" has joined");
-        socket.join(data.session_id);
-        socket.emit('joined_session', { msg: data.session_id});
-        socket.broadcast.to(data.session_id).emit('new_user_joined','User '+data.user_id+" has joined");
+        session.addNewParticipant(data.session_id, data.user_id).then(function (isAdded) {
+            if (isAdded) {
+                socket.join(data.session_id);
+                socket.emit('joined_session', { msg: true});
+                socket.broadcast.to(data.session_id).emit('new_user_joined', 'User ' + data.user_id + " has joined");
+            }else{
+                socket.emit('joined_session', { msg: false});
+            }
+        });
     });
 
     socket.on('update_location', function (data) {
