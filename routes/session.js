@@ -68,6 +68,7 @@ var getSession = function (session_id) {
 //    console.dir(response);
 //});
 
+exports.sendResponse = sendResponse;
 exports.createNewSession = createNewSession;
 exports.getSession = getSession;
 exports.addNewParticipant = addNewParticipant;

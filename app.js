@@ -69,24 +69,32 @@ io.sockets.on('connection', function (socket) {
     console.log('A new user connected!');
 
     socket.on('start_session', function (data) {
-        session.createNewSession(data).then(function (sessionData) {
-            if (sessionData.is_session_created) {
-                socket.join(sessionData.session_id);
-            }
-            socket.emit('session_started', sessionData);
-        });
+        if (data.user_id == null) {
+            socket.emit('session_started', session.sendResponse(false, null, "Unknown user"));
+        } else {
+            session.createNewSession(data).then(function (sessionData) {
+                if (sessionData.is_session_created) {
+                    socket.join(sessionData.session_id);
+                }
+                socket.emit('session_started', sessionData);
+            });
+        }
     });
 
     socket.on('join_session', function (data) {
-        session.addNewParticipant(data.session_id, data.user_id).then(function (isAdded) {
-            if (isAdded) {
-                socket.join(data.session_id);
-                socket.emit('joined_session', { joined: true});
-                socket.broadcast.to(data.session_id).emit('new_user_joined', 'User ' + data.user_id + " has joined");
-            }else{
-                socket.emit('joined_session', { joined: false});
-            }
-        });
+        if (data.user_id == null || data.session_id == null) {
+            socket.emit('joined_session', { joined: false});
+        } else {
+            session.addNewParticipant(data.session_id, data.user_id).then(function (isAdded) {
+                if (isAdded) {
+                    socket.join(data.session_id);
+                    socket.emit('joined_session', { joined: true});
+                    socket.broadcast.to(data.session_id).emit('new_user_joined', {user_id: data.user_id});
+                } else {
+                    socket.emit('joined_session', { joined: false});
+                }
+            });
+        }
     });
 
     socket.on('update_location', function (data) {
