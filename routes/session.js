@@ -57,6 +57,22 @@ var addNewParticipant = function (session_id, userId) {
     });
 };
 
+var isParticipantOfSession = function (session_id, userId) {
+    return getSession(session_id).then(function (sessionData) {
+        if (sessionData != null) {
+            var participants = sessionData.participants;
+            for (var participant in participants) {
+                if (participant.user_id == userId) {
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            return false;
+        }
+    });
+};
+
 var getSession = function (session_id) {
     return mongoDbHelper.findOneDocument(SESSION_COLLECTION, {"session_id": session_id}).then(function (sessionData) {
         return sessionData;
@@ -72,3 +88,4 @@ exports.sendResponse = sendResponse;
 exports.createNewSession = createNewSession;
 exports.getSession = getSession;
 exports.addNewParticipant = addNewParticipant;
+exports.isParticipantOfSession = isParticipantOfSession;

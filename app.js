@@ -97,6 +97,23 @@ io.sockets.on('connection', function (socket) {
         }
     });
 
+    socket.on('rejoin_session', function (data) {
+        if (data.user_id == null || data.session_id == null) {
+            socket.emit('rejoined', { joined: false});
+        } else {
+            session.isParticipantOfSession(data.session_id, data.user_id).then(function (isParticipant) {
+                if (isParticipant) {
+                    console.log("is already participant "+isParticipant);
+                    socket.join(data.session_id);
+                    socket.emit('rejoined', { joined: true});
+                    socket.broadcast.to(data.session_id).emit('user_rejoined', {user_id: data.user_id});
+                } else {
+                    socket.emit('rejoined', { joined: false});
+                }
+            });
+        }
+    });
+
     socket.on('update_location', function (data) {
         socket.broadcast.to(data.session_id).emit('get_location','User '+data.user_id+" has updated location "+data.location);
     });
