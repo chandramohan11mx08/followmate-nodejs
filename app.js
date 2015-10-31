@@ -103,7 +103,6 @@ io.sockets.on('connection', function (socket) {
         } else {
             session.isParticipantOfSession(data.session_id, data.user_id).then(function (isParticipant) {
                 if (isParticipant) {
-                    console.log("is already participant "+isParticipant);
                     socket.join(data.session_id);
                     socket.emit('rejoined', { joined: true});
                     socket.broadcast.to(data.session_id).emit('user_rejoined', {user_id: data.user_id});

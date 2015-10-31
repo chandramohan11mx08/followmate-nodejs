@@ -61,8 +61,9 @@ var isParticipantOfSession = function (session_id, userId) {
     return getSession(session_id).then(function (sessionData) {
         if (sessionData != null) {
             var participants = sessionData.participants;
-            for (var participant in participants) {
-                if (participant.user_id == userId) {
+            for(var participant in participants) {
+                var p = participants[participant];
+                if (p.user_id == userId) {
                     return true;
                 }
             }
