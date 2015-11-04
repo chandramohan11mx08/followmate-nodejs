@@ -101,8 +101,8 @@ io.sockets.on('connection', function (socket) {
         if (data.user_id == null || data.session_id == null) {
             socket.emit('rejoined', { joined: false});
         } else {
-            session.isParticipantOfSession(data.session_id, data.user_id).then(function (isParticipant) {
-                if (isParticipant) {
+            session.setParticipantOnlineStatus(data.session_id, data.user_id, true).then(function (statusChanged) {
+                if (statusChanged) {
                     socket.join(data.session_id);
                     socket.emit('rejoined', { joined: true});
                     socket.broadcast.to(data.session_id).emit('user_rejoined', {user_id: data.user_id});

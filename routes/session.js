@@ -20,6 +20,7 @@ var createNewSession = function (data) {
             var data = {
                 "session_id": response.session_id,
                 "user_id": userId,
+                "active": true,
                 "start_time": currentTimestamp,
                 "participants": [
                     {"user_id": userId, "joined_at": currentTimestamp}
@@ -74,6 +75,18 @@ var isParticipantOfSession = function (session_id, userId) {
     });
 };
 
+var setParticipantOnlineStatus = function (session_id, userId, onlineStatus) {
+    return isParticipantOfSession(session_id, userId).then(function (isParticipant) {
+        if (isParticipant) {
+            return mongoDbHelper.updateDocument(SESSION_COLLECTION, {"session_id": session_id, "participants.user_id": userId}, {$set: {"participants.$.active": onlineStatus}}).then(function (isUpdated) {
+                return isUpdated;
+            });
+        } else {
+            return false;
+        }
+    });
+};
+
 var getSession = function (session_id) {
     return mongoDbHelper.findOneDocument(SESSION_COLLECTION, {"session_id": session_id}).then(function (sessionData) {
         return sessionData;
@@ -90,3 +103,4 @@ exports.createNewSession = createNewSession;
 exports.getSession = getSession;
 exports.addNewParticipant = addNewParticipant;
 exports.isParticipantOfSession = isParticipantOfSession;
+exports.setParticipantOnlineStatus = setParticipantOnlineStatus;
