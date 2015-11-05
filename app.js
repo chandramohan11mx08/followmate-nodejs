@@ -86,13 +86,13 @@ io.sockets.on('connection', function (socket) {
         if (data.user_id == null || data.session_id == null) {
             socket.emit('joined_session', { joined: false});
         } else {
-            session.addNewParticipant(data.session_id, data.user_id).then(function (isAdded) {
-                if (isAdded) {
+            session.addNewParticipant(data).then(function (response) {
+                if (response.isAdded) {
                     socket.join(data.session_id);
-                    socket.emit('joined_session', { joined: true});
+                    socket.emit('joined_session', { joined: true, participants: response.participants});
                     socket.broadcast.to(data.session_id).emit('new_user_joined', {user_id: data.user_id,userLocation:data.user_location});
                 } else {
-                    socket.emit('joined_session', { joined: false});
+                    socket.emit('joined_session', { joined: false, participants:[]});
                 }
             });
         }

@@ -14,6 +14,7 @@ var sendResponse = function (isSessionCreated, sessionId, message) {
 
 var createNewSession = function (data) {
     var userId = data.user_id;
+    var userLocation = data.user_location;
     return getNewSessionId().then(function (response) {
         if (response.status) {
             var currentTimestamp = Date.now();
@@ -23,7 +24,7 @@ var createNewSession = function (data) {
                 "active": true,
                 "start_time": currentTimestamp,
                 "participants": [
-                    {"user_id": userId, "joined_at": currentTimestamp}
+                    getParticipantObject(userId, userLocation)
                 ]
             };
             return mongoDbHelper.insertDocument(SESSION_COLLECTION, data).then(function (result) {
@@ -45,15 +46,23 @@ var getNewSessionId = function () {
     });
 };
 
-var addNewParticipant = function (session_id, userId) {
+function getParticipantObject(userId, userLocation) {
+    return {"user_id": userId, "joined_at": Date.now(), "start_location": userLocation, "lastest_location": userLocation};
+}
+
+var addNewParticipant = function (data) {
+    var session_id = data.session_id;
+    var userId = data.user_id;
+    var userLocation = data.user_location;
     return getSession(session_id).then(function (sessionData) {
         if (sessionData != null) {
-            sessionData.participants.push({"user_id": userId, "joined_at": Date.now()});
+            var participants = sessionData.participants;
+            sessionData.participants.push(getParticipantObject(userId, userLocation));
             return mongoDbHelper.updateDocument(SESSION_COLLECTION, {"session_id": session_id}, {$set: {"participants": sessionData.participants}}).then(function (isUpdated) {
-                return isUpdated;
+                return {isAdded:isUpdated, participants: participants} ;
             });
         }else{
-            return false;
+            return {isAdded:false, participants: []};
         }
     });
 };
