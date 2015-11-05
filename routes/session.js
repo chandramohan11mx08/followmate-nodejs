@@ -87,6 +87,14 @@ var setParticipantOnlineStatus = function (session_id, userId, onlineStatus) {
     });
 };
 
+var dropUserFromSession = function (req, res) {
+    var sessionId = req.body.session_id;
+    var userId = req.body.user_id;
+    setParticipantOnlineStatus(sessionId, userId, false).then(function (updated) {
+        res.send({updated: updated});
+    });
+}
+
 var getSession = function (session_id) {
     return mongoDbHelper.findOneDocument(SESSION_COLLECTION, {"session_id": session_id}).then(function (sessionData) {
         return sessionData;
@@ -104,3 +112,4 @@ exports.getSession = getSession;
 exports.addNewParticipant = addNewParticipant;
 exports.isParticipantOfSession = isParticipantOfSession;
 exports.setParticipantOnlineStatus = setParticipantOnlineStatus;
+exports.dropUserFromSession = dropUserFromSession;
