@@ -82,6 +82,7 @@ io.sockets.on('connection', function (socket) {
     });
 
     socket.on('join_session', function (data) {
+        console.dir(data);
         if (data.user_id == null || data.session_id == null) {
             socket.emit('joined_session', { joined: false});
         } else {
@@ -89,7 +90,7 @@ io.sockets.on('connection', function (socket) {
                 if (isAdded) {
                     socket.join(data.session_id);
                     socket.emit('joined_session', { joined: true});
-                    socket.broadcast.to(data.session_id).emit('new_user_joined', {user_id: data.user_id});
+                    socket.broadcast.to(data.session_id).emit('new_user_joined', {user_id: data.user_id,userLocation:data.user_location});
                 } else {
                     socket.emit('joined_session', { joined: false});
                 }
