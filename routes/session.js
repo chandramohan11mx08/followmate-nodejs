@@ -47,7 +47,7 @@ var getNewSessionId = function () {
 };
 
 function getParticipantObject(userId, userLocation) {
-    return {"user_id": userId, "joined_at": Date.now(), "start_location": userLocation, "lastest_location": userLocation};
+    return {"user_id": userId, "joined_at": Date.now(), "start_location": userLocation, "latest_location": userLocation};
 }
 
 var addNewParticipant = function (data) {
