@@ -118,9 +118,8 @@ io.sockets.on('connection', function (socket) {
         socket.broadcast.to(data.session_id).emit('get_location','User '+data.user_id+" has updated location "+data.location);
     });
 
-    socket.on('chat_message', function (msg) {
-        console.dir(msg+" from "+socket.id);
-        socket.broadcast.emit('chat_received', { msg: msg});
+    socket.on('share_location', function (data) {
+        socket.broadcast.to(data.session_id).emit('user_location', data);
     });
 
     socket.on('disconnect', function () {
