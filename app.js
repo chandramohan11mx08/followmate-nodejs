@@ -89,7 +89,7 @@ io.sockets.on('connection', function (socket) {
             session.addNewParticipant(data).then(function (response) {
                 if (response.isAdded) {
                     socket.join(data.session_id);
-                    socket.emit('joined_session', { joined: true, participants: response.participants});
+                    socket.emit('joined_session', { joined: true, session_id: data.session_id, participants: response.participants});
                     socket.broadcast.to(data.session_id).emit('new_user_joined', {user_id: data.user_id, session_id: data.session_id, userLocation: data.user_location});
                 } else {
                     socket.emit('joined_session', { joined: false, participants:[]});
@@ -104,9 +104,11 @@ io.sockets.on('connection', function (socket) {
         } else {
             session.setParticipantOnlineStatus(data.session_id, data.user_id, true).then(function (statusChanged) {
                 if (statusChanged) {
-                    socket.join(data.session_id);
-                    socket.emit('rejoined', { joined: true});
-                    socket.broadcast.to(data.session_id).emit('user_rejoined', {user_id: data.user_id});
+                    session.getSession(data.session_id).then(function(sessionData){
+                        socket.join(data.session_id);
+                        socket.emit('rejoined', { joined: true, participants:sessionData.participants});
+                        socket.broadcast.to(data.session_id).emit('user_rejoined', {user_id: data.user_id});
+                    });
                 } else {
                     socket.emit('rejoined', { joined: false});
                 }
