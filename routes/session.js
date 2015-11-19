@@ -12,6 +12,16 @@ var sendResponse = function (isSessionCreated, sessionId, message) {
     return ({'is_session_created': isSessionCreated, 'session_id': sessionId, 'msg': message});
 };
 
+var sendResponseForCreateSession = function (res, isSessionCreated, sessionId, message) {
+    console.log("response for create "+isSessionCreated);
+    res.send({'is_session_created': isSessionCreated, 'session_id': sessionId, 'msg': message});
+};
+
+var sendResponseForJoinSession = function (res, joined,session_id, participants, message) {
+    console.log("response for join "+joined);
+    res.send({ joined: true, session_id: session_id, participants: participants,msg:message});
+};
+
 var createNewSession = function (data) {
     var userId = data.user_id;
     var userLocation = data.user_location;
@@ -109,12 +119,39 @@ var getSession = function (session_id) {
         return sessionData;
     });
 };
-//var data2 = {"user_id": 1234};
-//var response = createNewSession(data2).then(function(response){
-//    console.log("response");
-//    console.dir(response);
-//});
 
+var startSession = function (req, res) {
+    var data = req.body;
+    if (data.user_id == null || data.user_id =="") {
+        sendResponseForCreateSession(res, false, null, "Unknown user");
+    } else {
+        createNewSession(data).then(function (sessionData) {
+            if (sessionData.is_session_created) {
+                sendResponseForCreateSession(res, true, sessionData.session_id, "success");
+            }
+            sendResponseForCreateSession(res, false, null, "Something went wrong");
+        });
+    }
+}
+
+var joinSession = function (req, res) {
+    var data = req.body;
+    if (data.user_id == null || data.session_id == null) {
+        sendResponseForJoinSession(res, false, data.session_id, null, "Invalid request");
+    } else {
+        addNewParticipant(data).then(function (response) {
+            if (response.isAdded) {
+                sendResponseForJoinSession(res, true, data.session_id, response.participants, "success");
+            } else {
+                sendResponseForJoinSession(res, false, data.session_id, null, "Something went wrong");
+            }
+        });
+    }
+}
+
+
+exports.startSession = startSession;
+exports.joinSession = joinSession;
 exports.sendResponse = sendResponse;
 exports.createNewSession = createNewSession;
 exports.getSession = getSession;

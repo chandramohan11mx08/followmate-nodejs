@@ -16,4 +16,12 @@ router.post('/session/drop', function (req, res, next) {
     sessionHandler.dropUserFromSession(req, res);
 });
 
+router.post('/session/start', function (req, res, next) {
+    sessionHandler.startSession(req, res);
+});
+
+router.post('/session/join', function (req, res, next) {
+    sessionHandler.joinSession(req, res);
+});
+
 module.exports = router;
