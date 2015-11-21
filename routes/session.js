@@ -34,7 +34,7 @@ var createNewSession = function (data) {
                 "active": true,
                 "start_time": currentTimestamp,
                 "participants": [
-                    getParticipantObject(userId, userLocation)
+                    getParticipantObject(userId, userLocation, true)
                 ]
             };
             return mongoDbHelper.insertDocument(SESSION_COLLECTION, data).then(function (result) {
@@ -56,18 +56,19 @@ var getNewSessionId = function () {
     });
 };
 
-function getParticipantObject(userId, userLocation) {
-    return {"user_id": userId, "joined_at": Date.now(), "start_location": userLocation, "latest_location": userLocation};
+function getParticipantObject(userId, userLocation,visibility) {
+    return {"user_id": userId, "joined_at": Date.now(), "start_location": userLocation, "latest_location": userLocation,"visibility":visibility};
 }
 
 var addNewParticipant = function (data) {
     var session_id = data.session_id;
     var userId = data.user_id;
     var userLocation = data.user_location;
+    var visibility = data.visibility;
     return getSession(session_id).then(function (sessionData) {
         if (sessionData != null) {
             var participants = sessionData.participants;
-            sessionData.participants.push(getParticipantObject(userId, userLocation));
+            sessionData.participants.push(getParticipantObject(userId, userLocation,visibility));
             return mongoDbHelper.updateDocument(SESSION_COLLECTION, {"session_id": session_id}, {$set: {"participants": sessionData.participants}}).then(function (isUpdated) {
                 return {isAdded:isUpdated, participants: participants} ;
             });
@@ -88,6 +89,18 @@ var isParticipantOfSession = function (session_id, userId) {
                 }
             }
             return false;
+        } else {
+            return false;
+        }
+    });
+};
+
+var setParticipantVisibility= function (session_id, userId, visibility) {
+    return isParticipantOfSession(session_id, userId).then(function (isParticipant) {
+        if (isParticipant) {
+            return mongoDbHelper.updateDocument(SESSION_COLLECTION, {"session_id": session_id, "participants.user_id": userId}, {$set: {"participants.$.visibility": visibility}}).then(function (isUpdated) {
+                return isUpdated;
+            });
         } else {
             return false;
         }
@@ -158,4 +171,5 @@ exports.getSession = getSession;
 exports.addNewParticipant = addNewParticipant;
 exports.isParticipantOfSession = isParticipantOfSession;
 exports.setParticipantOnlineStatus = setParticipantOnlineStatus;
+exports.setParticipantVisibility = setParticipantVisibility;
 exports.dropUserFromSession = dropUserFromSession;

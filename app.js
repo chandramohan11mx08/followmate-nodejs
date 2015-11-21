@@ -82,15 +82,17 @@ io.sockets.on('connection', function (socket) {
     });
 
     socket.on('join_session', function (data) {
+        console.log("trying to join");
         console.dir(data);
         if (data.user_id == null || data.session_id == null) {
             socket.emit('joined_session', { joined: false});
+            console.log("failed");
         } else {
             session.addNewParticipant(data).then(function (response) {
                 if (response.isAdded) {
                     socket.join(data.session_id);
                     socket.emit('joined_session', { joined: true, session_id: data.session_id, participants: response.participants});
-                    socket.broadcast.to(data.session_id).emit('new_user_joined', {user_id: data.user_id, session_id: data.session_id, userLocation: data.user_location});
+                    socket.broadcast.to(data.session_id).emit('new_user_joined', {user_id: data.user_id, session_id: data.session_id, userLocation: data.user_location,visibility:data.visibility});
                 } else {
                     socket.emit('joined_session', { joined: false, participants:[]});
                 }
@@ -106,6 +108,7 @@ io.sockets.on('connection', function (socket) {
                 if (statusChanged) {
                     session.getSession(data.session_id).then(function(sessionData){
                         socket.join(data.session_id);
+                        console.log("rejoined session " + data.session_id);
                         socket.emit('rejoined', { joined: true, participants:sessionData.participants});
                         socket.broadcast.to(data.session_id).emit('user_rejoined', {user_id: data.user_id});
                     });
@@ -114,6 +117,15 @@ io.sockets.on('connection', function (socket) {
                 }
             });
         }
+    });
+
+    socket.on('change_visibility', function (data) {
+        session.setParticipantVisibility(data.session_id, data.user_id, data.visibility).then(function (statusChanged) {
+            if (statusChanged) {
+                console.log("visibility changed by " + data.user_id);
+                socket.broadcast.to(data.session_id).emit('visibility_changed', {session_id: data.session_id, user_id: data.user_id, visibility: data.visibility});
+            }
+        });
     });
 
     socket.on('update_location', function (data) {
@@ -127,6 +139,13 @@ io.sockets.on('connection', function (socket) {
     socket.on('disconnect', function () {
         console.log('user disconnected');
     });
+
+    setTimeout(sendHeartbeat,7000);
+
+    function sendHeartbeat(){
+        setTimeout(sendHeartbeat, 7000);
+        io.sockets.emit('ping', { beat : 1 });
+    }
 });
 
 http.listen(app.get('port'), function () {
