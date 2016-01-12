@@ -6,6 +6,7 @@ var INVALID_MOBILE_NUMBER = 'Invalid mobile number';
 var ERROR_UNKNOWN = 'Something went wrong';
 
 var USER_COLLECTION = "user";
+var USER_CONTACT_COLLECTION = "user_contacts";
 
 var sendResponse = function (res, isUserCreated, isVerificationRequired, message, userId, mobileNumber) {
     var code = null;
@@ -53,6 +54,48 @@ var registerUser = function (req, res) {
     }
 };
 
+function getPhoneNumbersAsArray(contacts) {
+    var phoneNumbersForQuery = [];
+    for (var index in contacts) {
+        var contact = contacts[index];
+        var number = contact.number;
+        phoneNumbersForQuery.push(number);
+    }
+    return phoneNumbersForQuery;
+}
+
+function attachDisplayName(docs, contacts) {
+    for (var index in docs) {
+        var contactFromDoc = docs[index];
+        for (var cin in contacts) {
+            var originalContact = contacts[cin];
+            if (originalContact.number === contactFromDoc.mobile_number) {
+                contactFromDoc.displayName = originalContact.displayName;
+            }
+        }
+    }
+}
+
+var getUserContacts = function (req, res) {
+    var contacts = req.body.contacts;
+    var user_id = req.body.user_id;
+    var responseContact = {"contacts": []};
+    if (contacts.length > 0) {
+        var phoneNumbersForQuery = getPhoneNumbersAsArray(contacts);
+        var fields = ["mobile_number", "user_id"];
+        mongoDbHelper.findWithProjection(USER_COLLECTION, {"mobile_number": {$in: phoneNumbersForQuery}, "user_id": {$ne: user_id}, "is_active": true, "is_verified": true}, fields).then(function (docs) {
+            var contact_doc = {"user_id": user_id, "contacts": contacts};
+            mongoDbHelper.upsertDocument(USER_CONTACT_COLLECTION, {"user_id": user_id}, contact_doc).then(function (isInserted) {
+                attachDisplayName(docs, contacts);
+                responseContact.contacts = docs;
+                res.send(responseContact);
+            });
+        });
+    } else {
+        res.send(responseContact);
+    }
+};
+
 var getNewUserId = function () {
     var shortId = shortIdHelper.getShortId();
     return mongoDbHelper.isDocumentExists(USER_COLLECTION, {'user_id': shortId}).then(function (isExists) {
@@ -65,3 +108,4 @@ var getNewUserId = function () {
 };
 
 exports.registerUser = registerUser;
+exports.getUserContacts = getUserContacts;

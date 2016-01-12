@@ -1,21 +1,21 @@
 {
-    "name": "followmate-backend",
-    "version": "0.0.0",
-    "private": true,
-    "scripts": {
-        "start": "node ./bin/www"
-    },
-    "dependencies": {
-        "bluebird":"~2.10.2",
-        "body-parser": "~1.12.4",
-        "cookie-parser": "~1.3.5",
-        "debug": "~2.2.0",
-        "express": "~4.12.4",
-        "express-handlebars": "^1.1.0",
-        "socket.io": "latest",
-        "mongodb": "~2.0.45",
-        "shortid": "~2.2.2",
-        "morgan": "~1.5.3",
-        "serve-favicon": "~2.2.1"
-    }
+  "name": "followmate-backend",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www"
+  },
+  "dependencies": {
+    "bluebird": "~2.10.2",
+    "body-parser": "~1.12.4",
+    "cookie-parser": "~1.3.5",
+    "debug": "~2.2.0",
+    "express": "~4.12.4",
+    "express-handlebars": "^1.1.0",
+    "mongodb": "~2.0.45",
+    "morgan": "~1.5.3",
+    "serve-favicon": "~2.2.1",
+    "shortid": "~2.2.2",
+    "socket.io": "latest"
+  }
 }

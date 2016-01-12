@@ -12,6 +12,10 @@ router.post('/user/register',function(req,res,next){
     registerUser.registerUser(req,res);
 });
 
+router.post('/user/contacts',function(req,res,next){
+    registerUser.getUserContacts(req,res);
+});
+
 router.post('/session/drop', function (req, res, next) {
     sessionHandler.dropUserFromSession(req, res);
 });

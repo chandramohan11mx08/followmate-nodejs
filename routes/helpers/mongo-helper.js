@@ -37,6 +37,15 @@ var updateDocument = function (collection, conditionAsJson, values) {
     });
 };
 
+var upsertDocument = function (collection, conditionAsJson, values) {
+    return connectToMongoDb().then(function (db) {
+        return db.collection(collection).updateOne(conditionAsJson, values,{upsert:true}).then(function (result) {
+            db.close();
+            return result.result.ok == 1;
+        });
+    });
+};
+
 var findOneDocument = function (collection, query) {
     return connectToMongoDb().then(function (db) {
         return db.collection(collection).find(query).toArray().then(function (docs) {
@@ -50,19 +59,29 @@ var findOneDocument = function (collection, query) {
     });
 };
 
-//var data2 = {"session_id": "Nkow2pCgg"};
-//var participants = ["123", "124", "125"];
-//participants.push("126");
-//var response = updateDocument("session", data2, {$set: { "participants": participants }}).then(function (response) {
-//    console.log("response");
-//    console.dir(response);
-//});
+var findWithProjection = function (collection, query, fields) {
+    return connectToMongoDb().then(function (db) {
+        return db.collection(collection).find(query, fields).toArray().then(function (docs) {
+            db.close();
+                return docs;
+        });
+    });
+};
 
-//var response = findOneDocument("session", data2).then(function (response) {
-//    console.log("response");
-//    console.dir(response);
-//});
+var find = function (collection, query) {
+    return connectToMongoDb().then(function (db) {
+        return db.collection(collection).find(query).toArray().then(function (docs) {
+            db.close();
+            return docs;
+        });
+    });
+};
+
+
 exports.isDocumentExists = isDocumentExists;
 exports.insertDocument = insertDocument;
 exports.updateDocument = updateDocument;
 exports.findOneDocument = findOneDocument;
+exports.find = find;
+exports.findWithProjection = findWithProjection;
+exports.upsertDocument = upsertDocument;
