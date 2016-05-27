@@ -9,10 +9,7 @@ var USER_COLLECTION = "user";
 var USER_CONTACT_COLLECTION = "user_contacts";
 
 var sendResponse = function (res, isUserCreated, isVerificationRequired, message, userId, mobileNumber) {
-    var code = null;
-    if (isVerificationRequired) {
-        code = shortIdHelper.getShortId();
-    }
+    var code = shortIdHelper.getShortId();
     var responseData = {'is_user_created': isUserCreated, 'msg': message, 'user_id': userId, 'mobile_number': mobileNumber, "isVerificationRequired": isVerificationRequired, "code": code};
     res.send(responseData);
 };
@@ -36,7 +33,7 @@ var registerUser = function (req, res) {
         mongoDbHelper.isDocumentExists(USER_COLLECTION, {'mobile_number': mobileNumber}).then(function (isExists) {
             if (isExists) {
                 mongoDbHelper.findOneDocument(USER_COLLECTION,{'mobile_number': mobileNumber}).then(function(document){
-                    sendResponse(res, false, true, MOBILE_NUMBER_EXISTS, document.user_id, mobileNumber);
+                    sendResponse(res, false, false, MOBILE_NUMBER_EXISTS, document.user_id, mobileNumber);
                 });
             } else {
                 getNewUserId().then(function (response) {
