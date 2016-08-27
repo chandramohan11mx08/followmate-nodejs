@@ -137,6 +137,14 @@ io.sockets.on('connection', function (socket) {
         socket.broadcast.to(data.session_id).emit('user_location', data);
     });
 
+    socket.on('end_session', function (data) {
+        session.endUserSession(data.session_id, data.user_id).then(function (response) {
+            if (response.terminated) {
+                socket.broadcast.to(data.session_id).emit('user_end_session', {session_id: data.session_id, user_id: data.user_id, visibility: data.visibility});
+            }
+        });
+    });
+
     socket.on('disconnect', function () {
         console.log('user disconnected');
     });

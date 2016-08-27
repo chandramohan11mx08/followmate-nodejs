@@ -2,7 +2,7 @@ var Promise = require('bluebird');
 var Mongo = Promise.promisify(require('mongodb'));
 var MongoClient = Promise.promisify(Mongo.MongoClient);
 
-var url = 'mongodb://localhost:27017/followmate';
+var url = 'mongodb://127.0.0.1:27017/followmate';
 
 var connectToMongoDb = function () {
     return MongoClient.connect(url).then(function (db) {
@@ -46,9 +46,12 @@ var upsertDocument = function (collection, conditionAsJson, values) {
     });
 };
 
-var findOneDocument = function (collection, query) {
+var findOneDocument = function (collection, query, options) {
+    if(options == null){
+        options = {};
+    }
     return connectToMongoDb().then(function (db) {
-        return db.collection(collection).find(query).toArray().then(function (docs) {
+        return db.collection(collection).find(query, options).toArray().then(function (docs) {
             db.close();
             if (docs != null && docs.length > 0){
                 return docs[0];

@@ -28,4 +28,17 @@ router.post('/session/join', function (req, res, next) {
     sessionHandler.joinSession(req, res);
 });
 
+router.post('/session/end', function (req, res, next) {
+    var session_id = req.body.session_id;
+    var user_id = req.body.user_id;
+    sessionHandler.endUserSession(session_id, user_id).then(function (response) {
+        if(response.err){
+            res.status(500);
+            res.send(response);
+        }else{
+            res.send(response);
+        }
+    });
+});
+
 module.exports = router;
