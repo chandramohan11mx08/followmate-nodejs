@@ -140,7 +140,10 @@ io.sockets.on('connection', function (socket) {
     socket.on('end_session', function (data) {
         session.endUserSession(data.session_id, data.user_id).then(function (response) {
             if (response.terminated) {
+                socket.emit('terminated', { success: true});
                 socket.broadcast.to(data.session_id).emit('user_end_session', {session_id: data.session_id, user_id: data.user_id, visibility: data.visibility});
+            }else{
+                socket.emit('terminated', { success: false});
             }
         });
     });
